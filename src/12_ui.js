@@ -645,10 +645,17 @@ function bind() {
   $('fileSrt').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try {
-      const lyrics = J.srtToLyrics(await f.text());
-      if (!lyrics) throw new Error('empty');
-      S.project.lyrics = lyrics; $('lyrics').value = lyrics; replan(); flushSave();
-      toast('SRTを読み込みました（' + lyrics.split('\n').length + '行）');
+      const lines = J.srtToLyrics(await f.text());
+      if (!lines) throw new Error('empty');
+      S.project.lyrics = lines; $('lyrics').value = lines;
+      // English cues: hold the whole sentence for the cue's own duration — SRT timing is authored
+      // per cue, not per word, so re-splitting it further shows out-of-sync fragments (e.g. just "us").
+      // Japanese keeps JIZURA's usual multi-cut chunking (it already respects \N / line breaks).
+      const rows = lines.split('\n').filter(Boolean);
+      S.project.overrides = S.project.overrides || {};
+      rows.forEach((row, i) => { if (/[A-Za-z]/.test(row)) S.project.overrides[i] = Object.assign({}, S.project.overrides[i], { single: true }); });
+      replan(); flushSave();
+      toast('SRTを読み込みました（' + rows.length + '行）');
     } catch (err) { showMsg('SRTを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });

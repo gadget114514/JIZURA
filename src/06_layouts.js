@@ -149,7 +149,7 @@ J.LAYOUTS = {
     plan: (rng, cut, st) => ({ fontBig: rng.pick(fontsOf(st, ['display', 'serif'])), fontSmall: rng.pick(fontsOf(st, ['serif', 'body'])), mode: rng.pick(['line', 'stair', 'line', 'wave']), rotAmp: rng.range(2, 10), smallK: rng.range(0.42, 0.6), accentIdx: rng.int(0, 20) }),
     render(env) {
       const { W, H, sc } = env, P = env.cut.params;
-      const chars = [...env.cut.text.replace(/\s+/g, '')];
+      const chars = [...env.cut.text.replace(/\s+/g, ' ').trim()];
       const n = chars.length;
       const rows = n > 9 ? 2 : 1;
       const perRow = Math.ceil(n / rows);
@@ -190,7 +190,7 @@ J.LAYOUTS = {
       return { variant, cols: n <= 4 ? rng.pick([3, 5, 5]) : 3, font: rng.pick(fontsOf(st, ['serif', 'serif', 'display'])), side: rng.pick(['same', 'outline', 'dim']), perCol: rng.int(3, 6) };
     },
     render(env) {
-      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, '');
+      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, ' ').trim();
       const n = glyphCount(text);
       if (P.variant === 'repeat' && n <= 9) {
         const cols = P.cols;
@@ -280,7 +280,7 @@ J.LAYOUTS = {
     plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display'])), fontB: rng.pick(fontsOf(st, ['serif', 'display'])), extras: rng.chance(0.65) }),
     render(env) {
       const { W, H, sc } = env, P = env.cut.params, s = env.cut.seed;
-      const chars = [...env.cut.text.replace(/\s+/g, '')], n = chars.length;
+      const chars = [...env.cut.text.replace(/\s+/g, ' ').trim()], n = chars.length;
       if (P.extras) {
         for (let k = 0; k < 9; k++) {
           const ap = J.r(s, k, 81) * env.cut.dur * 0.5;
@@ -306,7 +306,7 @@ J.LAYOUTS = {
     name: '円環', fits: n => n >= 2 && n <= 16,
     plan: (rng, cut, st) => ({ orient: rng.pick(['tangent', 'tangent', 'upright']), center: rng.pick(['word', 'disc', 'word', 'none']), speed: rng.range(4, 12) * rng.pick([1, -1]), R: rng.range(0.28, 0.35), font: rng.pick(fontsOf(st, ['display', 'serif'])), fontC: rng.pick(fontsOf(st, ['display', 'serif'])) }),
     render(env) {
-      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, '');
+      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, ' ').trim();
       const R = Math.min(H * P.R, W * 0.4), cx = W / 2, cy = H / 2, lb = env.ltb;
       const n = glyphCount(text);
       const unit = [...(text + '・')];
@@ -341,7 +341,7 @@ J.LAYOUTS = {
     name: '波の軌跡', fits: n => n >= 2 && n <= 16,
     plan: (rng, cut, st) => ({ amp: rng.range(0.08, 0.17), freq: rng.range(0.8, 1.6), trail: rng.pick([5, 7, 9]), font: rng.pick(fontsOf(st, ['display'])), travel: rng.range(0.25, 0.5) * rng.pick([1, -1]) }),
     render(env) {
-      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, '');
+      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, ' ').trim();
       const chars = [...text], n = chars.length;
       const size = Math.min(H * 0.2, W * 0.72 / n);
       const du = size * 1.05 / W, lb = env.ltb, u0 = 0.5 - (env.lt / env.cut.dur - 0.5) * P.travel;
@@ -368,7 +368,7 @@ J.LAYOUTS = {
     name: '画面突き抜け', fits: n => n <= 8,
     plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display'])), grad: !!st.useGrad && rng.chance(0.75), dir: rng.pick([1, -1]), label: rng.chance(0.8) }),
     render(env) {
-      const { W, H, sc } = env, P = env.cut.params, text0 = env.cut.text.replace(/\s+/g, '');
+      const { W, H, sc } = env, P = env.cut.params, text0 = env.cut.text.replace(/\s+/g, ' ').trim();
       const n = glyphCount(text0);
       const text = n >= 5 ? J.splitLines(text0, Math.ceil(n / 2)) : text0;
       const lines = text.split('\n').length;
@@ -392,7 +392,7 @@ J.LAYOUTS = {
     plan: (rng, cut, st) => ({ variant: rng.pick(['radial', 'rows', 'scatter']), unit: glyphCount(cut.text) <= 6 ? 'char' : rng.pick(['char', 'word']), center: rng.pick(['orb', 'word', 'none']), font: rng.pick(fontsOf(st, ['display', 'body'])), fontC: rng.pick(fontsOf(st, ['display'])) }),
     render(env) {
       const { W, H, sc } = env, P = env.cut.params, s = env.cut.seed, lb = env.ltb;
-      const text = env.cut.text.replace(/\s+/g, '');
+      const text = env.cut.text.replace(/\s+/g, ' ').trim();
       let units = P.unit === 'char' ? [...text].filter(c => !J.isPunct(c)) : (env.cut.words && env.cut.words.length ? env.cut.words : [text]);
       if (!units.length) units = [text];
       const out = 1 - E.inCubic(env.pOut);
@@ -439,7 +439,7 @@ J.LAYOUTS = {
     name: '縦長圧縮', fits: n => n <= 10,
     plan: (rng, cut, st) => { const n = glyphCount(cut.text); return { count: n <= 4 ? rng.pick([3, 2, 1]) : n <= 7 ? rng.pick([2, 1]) : 1, sx: rng.range(0.42, 0.58), sy: rng.range(1.1, 1.3), font: rng.pick(fontsOf(st, ['display', 'body'])) }; },
     render(env) {
-      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, '');
+      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, ' ').trim();
       const slot = W * 0.92 / P.count;
       const size = Math.min(J.fitSize(text, P.font, slot * 0.94, H * 0.8, { sx: P.sx, sy: P.sy, track: 0.04 }), H * 0.62);
       let bb = null; const order = [1, 0, 2, 3];
@@ -460,7 +460,7 @@ J.LAYOUTS = {
       if (P.bgText) {
         for (let r = 0; r < 3; r++) {
           const bs = H * 0.3;
-          env.draw({ text: (text.replace(/\s+/g, '') + '').repeat(6), font: P.font, size: bs, x: W / 2 + ((lb * 20 * (r % 2 ? 1 : -1)) % (bs * 2)), y: H * (0.18 + r * 0.32), color: sc.dim, alpha: 1, ghost: false });
+          env.draw({ text: (text.replace(/\s+/g, ' ').trim() + '　').repeat(6), font: P.font, size: bs, x: W / 2 + ((lb * 20 * (r % 2 ? 1 : -1)) % (bs * 2)), y: H * (0.18 + r * 0.32), color: sc.dim, alpha: 1, ghost: false });
         }
       }
       const right = P.side === 'right';
@@ -478,7 +478,7 @@ J.LAYOUTS = {
       const note = env.cut.note || J.romaji(text.replace(/\s+/g, '')) || env.cut.lineText;
       const ns = J.clamp(H * 0.024, 14, 26), body = env.st.fonts.body[0], serif = env.st.fonts.serif[0];
       const al = right ? 'left' : 'right';
-      env.draw({ text: '【' + text.replace(/\s+/g, '') + '】', font: serif, size: ns * 1.2, align: al, x: nx, y: ny - ns * 1.2, color: sc.fg, alpha: e, ghost: false });
+      env.draw({ text: '【' + text.replace(/\s+/g, ' ').trim() + '】', font: serif, size: ns * 1.2, align: al, x: nx, y: ny - ns * 1.2, color: sc.fg, alpha: e, ghost: false });
       if (P.vertNote) env.draw({ text: env.cut.lineText, font: serif, size: ns, vertical: true, align: 'left', x: nx + (right ? ns : -ns), y: ny + ns * 0.8, color: sc.sub, alpha: e, ghost: false });
       else env.draw({ text: note, font: body, size: ns, align: al, x: nx, y: ny + ns * 0.4, track: 0.08, color: sc.sub, alpha: e, ghost: false });
       env.draw({ text: 'No.' + String((env.cut.line | 0) + 1).padStart(2, '0'), font: env.st.fonts.mono[0] || 'mono', size: ns * 0.8, align: al, x: nx, y: ny + ns * 2, color: sc.accent, alpha: e, ghost: false });
@@ -534,7 +534,7 @@ J.LAYOUTS = {
     name: '円窓', fits: n => n <= 10,
     plan: (rng, cut, st) => ({ variant: rng.pick(['disc', 'eclipse', 'ring']), vertical: glyphCount(cut.text) <= 4 && rng.chance(0.5), font: rng.pick(fontsOf(st, ['display', 'serif'])), off: rng.range(-0.12, 0.12) }),
     render(env) {
-      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, ''), ctx = env.ctx;
+      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, ' ').trim(), ctx = env.ctx;
       const cx = W / 2 + P.off * W, cy = H / 2;
       const out = 1 - E.inCubic(env.pOut);
       if (P.variant === 'eclipse') {

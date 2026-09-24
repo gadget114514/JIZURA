@@ -264,7 +264,7 @@ J.plan = (project, audio) => {
     plan.lines[li].chunks = chunks;
     const L = J.lerp(1.3, 0.5, fx.density);
     let nC = Math.round(D / L);
-    const maxC = chunks.length + (chunks.length >= 2 && D > 2.0 ? 1 : 0);
+    const maxC = chunks.length + (!ln.manual && chunks.length >= 2 && D > 2.0 ? 1 : 0);
     nC = J.clamp(nC, 1, Math.max(1, maxC));
     if (ov.single) nC = 1;
     // groups of chunks

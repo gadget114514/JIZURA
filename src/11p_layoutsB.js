@@ -5,7 +5,7 @@ const E = J.E;
 const P = 'layoutsB';
 
 /* ------------------------------------------------------------------ helpers */
-const clean = t => String(t || '').replace(/\s+/g, '');
+const clean = t => String(t || '').replace(/\s+/g, ' ').trim();
 /* glyph slots keeping single word gaps (latin lyrics): a ' ' slot is left empty */
 const slotsOf = t => [...String(t || '').trim().replace(/[\s\u3000]+/g, ' ')];
 /* reading in capitals — only for kana text (latin would just be echoed back) */
@@ -1272,7 +1272,7 @@ J.register('layout', 'columnsBig', {
     const bb = J.mainDraw(env, { text: txt, font: Pm.font, size, x: hx, y: H / 2, vertical: true, track: 0.02, color: sc.fg });
     const fs = J.clamp(M * 0.031, 14, 44);
     const perCol = Math.max(4, Math.floor(colH * 0.92 / (fs * 1.08)));
-    const line = String(cut.lineText || cut.text).replace(/\s+/g, '');
+    const line = String(cut.lineText || cut.text).replace(/\s+/g, ' ').trim();
     const lineT = splitL(line, perCol);
     const rom = romaOf(txt);
     const sub2 = rom ? rom : cut.note ? String(cut.note) : `No.${String((cut.line | 0) + 1).padStart(2, '0')} ${J.fmtTime(cut.start)}`;

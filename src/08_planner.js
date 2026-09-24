@@ -71,6 +71,53 @@ J.parseLyrics = (raw) => {
   return { lines, meta };
 };
 
+/* ---------------- SRT import ---------------- */
+/* SubRip -> { start, lines[] } cues. Tolerant of a missing index line and 1–2 digit time fields. */
+J.parseSRT = (raw) => {
+  const src = String(raw || '').replace(/^﻿/, '').replace(/\r\n?/g, '\n');
+  const rows = src.split('\n');
+  const tsRe = /(\d{1,2}):(\d{1,2}):(\d{1,2})[.,](\d{1,3})\s*-->\s*(\d{1,2}):(\d{1,2}):(\d{1,2})[.,](\d{1,3})/;
+  const toSec = (h, m, s, ms) => (+h) * 3600 + (+m) * 60 + (+s) + (+((ms + '000').slice(0, 3))) / 1000;
+  const cues = [];
+  let i = 0;
+  while (i < rows.length) {
+    while (i < rows.length && !rows[i].trim()) i++;
+    if (i >= rows.length) break;
+    if (/^\d+$/.test(rows[i].trim()) && i + 1 < rows.length && tsRe.test(rows[i + 1])) i++;
+    const tm = rows[i] && rows[i].match(tsRe);
+    if (!tm) { i++; continue; }
+    const start = toSec(tm[1], tm[2], tm[3], tm[4]);
+    i++;
+    const text = [];
+    while (i < rows.length && rows[i].trim()) { text.push(rows[i]); i++; }
+    if (text.length) cues.push({ start, lines: text });
+  }
+  return cues;
+};
+/* SRT cues -> the app's own lyrics-textarea syntax (LRC timestamp + '/'-separated cut points),
+   so a cue's own line breaks become the only split points instead of JIZURA re-chunking every word. */
+J.srtToLyrics = (raw) => {
+  const fmtT = (t) => {
+    const ms = Math.max(0, Math.round(t * 1000));
+    const mm = Math.floor(ms / 60000);
+    return `${mm}:${((ms % 60000) / 1000).toFixed(3)}`;
+  };
+  const out = [];
+  J.parseSRT(raw).forEach(cue => {
+    const sub = cue.lines.join('\n')
+      .replace(/\\N/gi, '\n')            // ASS-style \N (and \n) forced/soft break -> real line break
+      .replace(/\{[^{}]*\}/g, '')        // ASS override tags, e.g. {\an8}
+      .replace(/<[^>]+>/g, '')           // basic HTML tags, e.g. <i>...</i>
+      .split('\n')
+      .map(s => s.replace(/\s+/g, ' ').trim())
+      .filter(Boolean)
+      .map(s => s.replace(/\//g, '／').replace(/\|/g, '｜'));   // '/' and '|' are JIZURA's own syntax
+    if (!sub.length) return;
+    out.push(`[${fmtT(cue.start)}]${sub.join('/')}/`);
+  });
+  return out.join('\n');
+};
+
 /* ---------------- chunking (bunsetsu-ish) ---------------- */
 const segmenter = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
 const segType = s => {

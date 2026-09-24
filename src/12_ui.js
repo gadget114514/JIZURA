@@ -642,6 +642,16 @@ function bind() {
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
+  $('fileSrt').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    try {
+      const lyrics = J.srtToLyrics(await f.text());
+      if (!lyrics) throw new Error('empty');
+      S.project.lyrics = lyrics; $('lyrics').value = lyrics; replan(); flushSave();
+      toast('SRTを読み込みました（' + lyrics.split('\n').length + '行）');
+    } catch (err) { showMsg('SRTを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
+    e.target.value = '';
+  });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
